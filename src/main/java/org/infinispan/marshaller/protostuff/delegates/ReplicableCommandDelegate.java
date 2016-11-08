@@ -56,8 +56,8 @@ final public class ReplicableCommandDelegate implements Delegate<ReplicableComma
    @Override
    public void writeTo(Output output, int i, ReplicableCommand replicableCommand, boolean b) throws IOException {
       System.out.println("In delegate writeTo | " + i);
-      ObjectOutput objectOutput = new ProtostuffObjectOutput(i, b, output);
-      replicableCommand.writeTo(objectOutput);
+//      ObjectOutput objectOutput = new ProtostuffObjectOutput(i, b, output);
+//      replicableCommand.writeTo(objectOutput);
 //      objectOutput.writeByte(WireFormat.WIRETYPE_TAIL_DELIMITER);
    }
 

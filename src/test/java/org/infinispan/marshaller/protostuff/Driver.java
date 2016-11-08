@@ -7,6 +7,7 @@ import java.io.ObjectOutput;
 import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.marshaller.protostuff.delegates.ReplicableCommandDelegate;
+import org.infinispan.marshaller.protostuff.schemas.ReplicableCommandSchema;
 
 import io.protostuff.Input;
 import io.protostuff.Output;
@@ -14,6 +15,7 @@ import io.protostuff.Schema;
 import io.protostuff.Tag;
 import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.RuntimeEnv;
+import io.protostuff.runtime.RuntimeSchema;
 
 /**
  * @author Ryan Emerson
@@ -25,6 +27,7 @@ public class Driver {
       if (RuntimeEnv.ID_STRATEGY instanceof DefaultIdStrategy) {
 //         ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new ReplicableCommandDelegate(Test.class));
       }
+      RuntimeSchema.register(Test.class, new ReplicableCommandSchema<>(Test.class));
       ProtoStuffMarshaller marshaller = new ProtoStuffMarshaller();
 
 //      System.out.println("Driver: " + RuntimeEnv.ID_STRATEGY.isDelegateRegistered(StateRequestCommand.class));
@@ -56,106 +59,7 @@ public class Driver {
       t.id = 5;
       t.test = 0x11;
       ByteBuffer buffer = marshaller.objectToBuffer(t);
-      System.out.println(marshaller.objectFromByteBuffer(buffer.getBuf()));
-   }
-
-   static class Test implements ReplicableCommand {
-//      String msg;
-      boolean flag;
-      boolean flag2;
-      int id;
-      byte test;
-
-      @Override
-      public byte getCommandId() {
-         return 0;
-      }
-
-      @Override
-      public boolean isReturnValueExpected() {
-         return false;
-      }
-
-      @Override
-      public boolean canBlock() {
-         return false;
-      }
-
-      @Override
-      public void writeTo(ObjectOutput output) throws IOException {
-         System.out.println("In Test writeTo");
-//         MarshallUtil.marshallString(msg, output);
-//         output.writeBoolean(flag);
-//         output.writeBoolean(flag2);
-//         output.writeInt(id);
-         output.writeByte(test);
-      }
-
-      @Override
-      public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
-         System.out.println("In Test readFrom");
-//         msg = MarshallUtil.unmarshallString(input);
-//         flag = input.readBoolean();
-//         flag2 = input.readBoolean();
-//         id = input.readInt();
-         test = input.readByte();
-      }
-
-      @Override
-      public String toString() {
-         return "Test{" +
-               "flag=" + flag +
-               ", flag2=" + flag2 +
-               ", id=" + id +
-               ", test=" + test +
-               '}';
-      }
-   }
-
-   public static class TestSchema implements Schema<Test> {
-      @Override
-      public String getFieldName(int number) {
-         return null;
-      }
-
-      @Override
-      public int getFieldNumber(String name) {
-         return 0;
-      }
-
-      @Override
-      public boolean isInitialized(Test message) {
-         return false;
-      }
-
-      @Override
-      public Test newMessage() {
-         return null;
-      }
-
-      @Override
-      public String messageName() {
-         return null;
-      }
-
-      @Override
-      public String messageFullName() {
-         return null;
-      }
-
-      @Override
-      public Class<? super Test> typeClass() {
-         return null;
-      }
-
-      @Override
-      public void mergeFrom(Input input, Test message) throws IOException {
-         System.out.println("mergeFrom in schema");
-      }
-
-      @Override
-      public void writeTo(Output output, Test message) throws IOException {
-         System.out.println("WriteTo in schema");
-      }
+      Object o = marshaller.objectFromByteBuffer(buffer.getBuf());
+      System.out.println("Object: " + o);
    }
 }

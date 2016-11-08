@@ -1,5 +1,10 @@
 package org.infinispan.marshaller.protostuff;
 
+import static io.protostuff.WireFormat.WIRETYPE_END_GROUP;
+import static io.protostuff.WireFormat.WIRETYPE_START_GROUP;
+import static io.protostuff.WireFormat.WIRETYPE_TAIL_DELIMITER;
+import static io.protostuff.WireFormat.makeTag;
+
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
@@ -24,10 +29,23 @@ public class ProtostuffObjectOutput implements ObjectOutput {
    private final boolean repeatable;
    private final Output output;
 
-   public ProtostuffObjectOutput(int fieldNumber, boolean repeatable, Output output) throws IOException, SecurityException {
+   public ProtostuffObjectOutput(Output output) throws IOException, SecurityException {
+      this(output, 1, false);
+   }
+
+   public ProtostuffObjectOutput(Output output, int fieldNumber, boolean repeatable) throws IOException, SecurityException {
+      this.output = output;
       this.fieldNumber = fieldNumber;
       this.repeatable = repeatable;
-      this.output = output;
+   }
+
+   public void startObjectGroup() throws IOException {
+//      write(makeTag(fieldNumber + 1, WIRETYPE_START_GROUP));
+   }
+
+   public void endObjectGroup() throws IOException {
+//      write(makeTag(fieldNumber, WIRETYPE_END_GROUP));
+//      write(makeTag(fieldNumber, WIRETYPE_TAIL_DELIMITER));
    }
 
    @Override

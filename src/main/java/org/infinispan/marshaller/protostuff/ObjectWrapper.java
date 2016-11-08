@@ -1,17 +1,29 @@
 package org.infinispan.marshaller.protostuff;
 
-import io.protostuff.Tag;
-
 /**
  * @author Ryan Emerson
  * @since 9.0
  */
 public class ObjectWrapper {
-   @Tag(1)
+
+   private Class interfaceClazz;
    private Object object;
 
-   ObjectWrapper(Object object) {
+
+   public ObjectWrapper() {}
+
+   public ObjectWrapper(Class interfaceClazz, Object object) {
+//      this.interfaceClazz = object.getClass().getName();
+      this.interfaceClazz = interfaceClazz;
       this.object = object;
+   }
+
+   public Class getInterfaceClazz() {
+      return interfaceClazz;
+   }
+
+   public void setInterfaceClazz(Class interfaceClazz) {
+      this.interfaceClazz = interfaceClazz;
    }
 
    public void setObject(Object object) {

@@ -8,6 +8,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
+import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.io.ByteBufferImpl;
 import org.infinispan.commons.logging.Log;
@@ -15,6 +16,8 @@ import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.AbstractMarshaller;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.marshaller.protostuff.delegates.DelegateRegister;
+import org.infinispan.marshaller.protostuff.schemas.ObjectWrapperSchema;
+import org.infinispan.marshaller.protostuff.schemas.ReplicableCommandSchema;
 
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
@@ -30,13 +33,14 @@ public class ProtoStuffMarshaller extends AbstractMarshaller implements Streamin
 
    static {
       DelegateRegister.init();
+      RuntimeSchema.register(ObjectWrapper.class, new ObjectWrapperSchema());
+//      RuntimeSchema.register(ReplicableCommand.class, new ReplicableCommandSchema());
    }
 
    private static final Log log = LogFactory.getLog(ProtoStuffMarshaller.class);
    private static final boolean trace = log.isTraceEnabled();
    private static final Schema<ObjectWrapper> WRAPPER_SCHEMA = RuntimeSchema.getSchema(ObjectWrapper.class);
 
-   // TODO check this implementation as it is called by RpcDispatcher.Marshaller bridge implementation
    @Override
    public Object objectFromByteBuffer(byte[] bytes, int offset, int length) throws IOException, ClassNotFoundException {
       ObjectWrapper wrapper = WRAPPER_SCHEMA.newMessage();
@@ -44,10 +48,9 @@ public class ProtoStuffMarshaller extends AbstractMarshaller implements Streamin
       return wrapper.getObject();
    }
 
-   // TODO check this implementation as it is called by RpcDispatcher.Marshaller bridge implementation
    @Override
    protected ByteBuffer objectToBuffer(Object obj, int estimatedSize) throws IOException, InterruptedException {
-      ObjectWrapper wrapper = new ObjectWrapper(obj);
+      ObjectWrapper wrapper = new ObjectWrapper(Test.class, obj);
       byte[] bytes = ProtostuffIOUtil.toByteArray(wrapper, WRAPPER_SCHEMA, LinkedBuffer.allocate());
       return new ByteBufferImpl(bytes, 0, bytes.length);
    }
@@ -72,9 +75,10 @@ public class ProtoStuffMarshaller extends AbstractMarshaller implements Streamin
       }
    }
 
+   // TODO update
    @Override
    public void objectToObjectStream(Object obj, ObjectOutput out) throws IOException {
-      ProtostuffIOUtil.writeDelimitedTo(out, new ObjectWrapper(obj), WRAPPER_SCHEMA);
+      ProtostuffIOUtil.writeDelimitedTo(out, new ObjectWrapper(Test.class, obj), WRAPPER_SCHEMA);
    }
 
    @Override
