@@ -3,6 +3,8 @@ package org.infinispan.marshaller.protostuff.schemas;
 import java.io.IOException;
 
 import org.infinispan.marshaller.protostuff.ObjectWrapper;
+import org.infinispan.marshaller.protostuff.ProtostuffObjectInput;
+import org.infinispan.marshaller.protostuff.ProtostuffObjectOutput;
 
 import io.protostuff.Input;
 import io.protostuff.Output;

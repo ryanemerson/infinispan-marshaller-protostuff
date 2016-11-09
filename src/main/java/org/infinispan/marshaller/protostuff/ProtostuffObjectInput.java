@@ -23,16 +23,30 @@ import io.protostuff.runtime.RuntimeSchema;
 public class ProtostuffObjectInput implements ObjectInput, Closeable {
 
    private final Input input;
-   private final Schema schema;
 
-   public ProtostuffObjectInput(Input input, Schema schema) {
+   public ProtostuffObjectInput(Input input) {
       this.input = input;
-      this.schema = schema;
    }
 
    @Override
    public Object readObject() throws ClassNotFoundException, IOException {
-      return input.mergeObject(schema.newMessage(), schema);
+      // TODO ArrayIndexOutOfBound due to repeated calls on readObject and fieldNumber
+      String className = readString();
+      if (className.isEmpty()) {
+         return null;
+      }
+
+//      ignoreFieldNumber();
+      Class clazz = Class.forName(className);
+      Schema schema = RuntimeSchema.getSchema(clazz);
+      Object object = schema.newMessage();
+      schema.mergeFrom(input, object);
+      return object;
+   }
+
+   private String readString() throws IOException {
+      ignoreFieldNumber();
+      return input.readString();
    }
 
    @Override

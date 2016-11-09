@@ -1,10 +1,5 @@
 package org.infinispan.marshaller.protostuff;
 
-import static io.protostuff.WireFormat.WIRETYPE_END_GROUP;
-import static io.protostuff.WireFormat.WIRETYPE_START_GROUP;
-import static io.protostuff.WireFormat.WIRETYPE_TAIL_DELIMITER;
-import static io.protostuff.WireFormat.makeTag;
-
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
@@ -16,7 +11,7 @@ import javax.annotation.Nonnull;
 import io.protostuff.ByteString;
 import io.protostuff.Output;
 import io.protostuff.ProtostuffOutput;
-import io.protostuff.Schema;
+import io.protostuff.WireFormat;
 import io.protostuff.runtime.RuntimeSchema;
 
 /**
@@ -39,21 +34,30 @@ public class ProtostuffObjectOutput implements ObjectOutput {
       this.repeatable = repeatable;
    }
 
-   public void startObjectGroup() throws IOException {
-//      write(makeTag(fieldNumber + 1, WIRETYPE_START_GROUP));
-   }
-
-   public void endObjectGroup() throws IOException {
-//      write(makeTag(fieldNumber, WIRETYPE_END_GROUP));
-//      write(makeTag(fieldNumber, WIRETYPE_TAIL_DELIMITER));
-   }
+//   @Override
+//   public void writeObject(Object obj) throws IOException {
+//      output.writeInt32(fieldNumber, (byte) WireFormat.WIRETYPE_START_GROUP, repeatable);
+//      if (obj == null) {
+//         output.writeString(fieldNumber++, "", false);
+//         return; // TODO better way to handle null objects
+//      }
+//      Class clazz = obj.getClass();
+//      output.writeString(fieldNumber++, clazz.getName(), false);
+//      RuntimeSchema.getSchema(clazz).writeTo(output, obj);
+//      output.writeInt32(fieldNumber, (byte) WireFormat.WIRETYPE_END_GROUP, repeatable);
+//      fieldNumber++;
+//   }
 
    @Override
    public void writeObject(Object obj) throws IOException {
-      if (obj == null)
-         return; // TODO how to handle null?
-      Schema schema = RuntimeSchema.getSchema(obj.getClass());
-      output.writeObject(fieldNumber++, obj, schema, repeatable);
+      if (obj == null) {
+         output.writeString(fieldNumber++, "", false);
+         return; // TODO better way to handle null objects
+      }
+      Class clazz = obj.getClass();
+      output.writeString(fieldNumber++, clazz.getName(), false);
+      RuntimeSchema.getSchema(clazz).writeTo(output, obj);
+      fieldNumber++;
    }
 
    @Override

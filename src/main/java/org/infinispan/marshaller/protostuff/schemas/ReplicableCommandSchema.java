@@ -10,6 +10,7 @@ import org.infinispan.marshaller.protostuff.ProtostuffObjectOutput;
 import io.protostuff.Input;
 import io.protostuff.Output;
 import io.protostuff.Schema;
+import io.protostuff.runtime.RuntimeEnv;
 
 /**
  * @author Ryan Emerson
@@ -43,7 +44,7 @@ public class ReplicableCommandSchema<T extends ReplicableCommand> implements Sch
    @Override
    public T newMessage() {
       try {
-         return implementation.newInstance();
+         return RuntimeEnv.newInstantiator(implementation).newInstance();
       } catch (Exception e) {
          throw new RuntimeException(e);
       }
@@ -68,7 +69,7 @@ public class ReplicableCommandSchema<T extends ReplicableCommand> implements Sch
    public void mergeFrom(Input input, ReplicableCommand message) throws IOException {
       System.out.println("mergeFrom in RC schema");
 
-      try (ObjectInput objectInput = new ProtostuffObjectInput(input, null)) {
+      try (ObjectInput objectInput = new ProtostuffObjectInput(input)) {
          message.readFrom(objectInput);
       } catch (ClassNotFoundException e) {
          throw new RuntimeException(e);
@@ -79,8 +80,6 @@ public class ReplicableCommandSchema<T extends ReplicableCommand> implements Sch
    public void writeTo(Output output, ReplicableCommand message) throws IOException {
       System.out.println("writeTo in RC schema");
       ProtostuffObjectOutput objectOutput = new ProtostuffObjectOutput(output, 1, false);
-      objectOutput.startObjectGroup();
       message.writeTo(objectOutput);
-      objectOutput.endObjectGroup();
    }
 }

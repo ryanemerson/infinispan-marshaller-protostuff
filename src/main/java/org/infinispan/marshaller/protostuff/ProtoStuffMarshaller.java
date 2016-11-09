@@ -8,21 +8,18 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import org.infinispan.commands.ReplicableCommand;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.io.ByteBufferImpl;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.commons.marshall.AbstractMarshaller;
 import org.infinispan.commons.marshall.StreamingMarshaller;
-import org.infinispan.marshaller.protostuff.delegates.DelegateRegister;
+import org.infinispan.marshaller.protostuff.schemas.SchemaRegister;
 import org.infinispan.marshaller.protostuff.schemas.ObjectWrapperSchema;
-import org.infinispan.marshaller.protostuff.schemas.ReplicableCommandSchema;
 
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
-import io.protostuff.Tag;
 import io.protostuff.runtime.RuntimeSchema;
 
 /**
@@ -32,7 +29,7 @@ import io.protostuff.runtime.RuntimeSchema;
 public class ProtoStuffMarshaller extends AbstractMarshaller implements StreamingMarshaller {
 
    static {
-      DelegateRegister.init();
+      SchemaRegister.init();
       RuntimeSchema.register(ObjectWrapper.class, new ObjectWrapperSchema());
 //      RuntimeSchema.register(ReplicableCommand.class, new ReplicableCommandSchema());
    }
@@ -50,7 +47,7 @@ public class ProtoStuffMarshaller extends AbstractMarshaller implements Streamin
 
    @Override
    protected ByteBuffer objectToBuffer(Object obj, int estimatedSize) throws IOException, InterruptedException {
-      ObjectWrapper wrapper = new ObjectWrapper(Test.class, obj);
+      ObjectWrapper wrapper = new ObjectWrapper(obj.getClass(), obj);
       byte[] bytes = ProtostuffIOUtil.toByteArray(wrapper, WRAPPER_SCHEMA, LinkedBuffer.allocate());
       return new ByteBufferImpl(bytes, 0, bytes.length);
    }
@@ -75,10 +72,9 @@ public class ProtoStuffMarshaller extends AbstractMarshaller implements Streamin
       }
    }
 
-   // TODO update
    @Override
    public void objectToObjectStream(Object obj, ObjectOutput out) throws IOException {
-      ProtostuffIOUtil.writeDelimitedTo(out, new ObjectWrapper(Test.class, obj), WRAPPER_SCHEMA);
+      ProtostuffIOUtil.writeDelimitedTo(out, new ObjectWrapper(obj.getClass(), obj), WRAPPER_SCHEMA);
    }
 
    @Override
