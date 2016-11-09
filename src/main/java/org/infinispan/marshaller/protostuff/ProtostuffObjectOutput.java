@@ -1,5 +1,9 @@
 package org.infinispan.marshaller.protostuff;
 
+import static io.protostuff.WireFormat.WIRETYPE_END_GROUP;
+import static io.protostuff.WireFormat.WIRETYPE_START_GROUP;
+import static io.protostuff.WireFormat.WIRETYPE_TAIL_DELIMITER;
+
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
@@ -9,8 +13,10 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 import io.protostuff.ByteString;
+import io.protostuff.LinkedBuffer;
 import io.protostuff.Output;
 import io.protostuff.ProtostuffOutput;
+import io.protostuff.Schema;
 import io.protostuff.WireFormat;
 import io.protostuff.runtime.RuntimeSchema;
 
@@ -34,30 +40,26 @@ public class ProtostuffObjectOutput implements ObjectOutput {
       this.repeatable = repeatable;
    }
 
-//   @Override
-//   public void writeObject(Object obj) throws IOException {
-//      output.writeInt32(fieldNumber, (byte) WireFormat.WIRETYPE_START_GROUP, repeatable);
-//      if (obj == null) {
-//         output.writeString(fieldNumber++, "", false);
-//         return; // TODO better way to handle null objects
-//      }
-//      Class clazz = obj.getClass();
-//      output.writeString(fieldNumber++, clazz.getName(), false);
-//      RuntimeSchema.getSchema(clazz).writeTo(output, obj);
-//      output.writeInt32(fieldNumber, (byte) WireFormat.WIRETYPE_END_GROUP, repeatable);
-//      fieldNumber++;
-//   }
-
    @Override
    public void writeObject(Object obj) throws IOException {
+      writeRawByte((byte) WireFormat.makeTag(fieldNumber, WIRETYPE_START_GROUP));
       if (obj == null) {
-         output.writeString(fieldNumber++, "", false);
-         return; // TODO better way to handle null objects
+         writeRawByte((byte) WireFormat.makeTag(fieldNumber, WIRETYPE_END_GROUP));
+         return;
       }
       Class clazz = obj.getClass();
-      output.writeString(fieldNumber++, clazz.getName(), false);
+      System.out.println("CLazzz field number: " + fieldNumber);
+      output.writeString(fieldNumber, clazz.getName(), false);
       RuntimeSchema.getSchema(clazz).writeTo(output, obj);
+      System.out.println("END_GROUP field number: " + fieldNumber);
+      writeRawByte((byte) WireFormat.makeTag(fieldNumber, WIRETYPE_END_GROUP));
       fieldNumber++;
+   }
+
+   private void writeRawByte(byte v) throws IOException {
+      ProtostuffOutput protostuffOutput = (ProtostuffOutput) output;
+      protostuffOutput.sink.writeByte(v, protostuffOutput, protostuffOutput.head);
+
    }
 
    @Override

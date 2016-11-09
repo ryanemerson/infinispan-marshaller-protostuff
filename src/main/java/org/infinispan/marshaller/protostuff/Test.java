@@ -20,6 +20,7 @@ public class Test implements ReplicableCommand {
    public int id;
    public byte test;
    public EmbeddedObject obj;
+   public EmbeddedObject obj2;
    public Collection<Integer> segments;
 
    @Override
@@ -39,28 +40,33 @@ public class Test implements ReplicableCommand {
 
    @Override
    public void writeTo(ObjectOutput output) throws IOException {
-      System.out.println("In Test writeTo");
 //      MarshallUtil.marshallString(msg, output);
+//      output.writeUTF(msg);
 //      output.writeBoolean(flag);
 //      output.writeBoolean(flag2);
 //      output.writeInt(id);
+//      output.writeObject(obj);
 //      output.writeByte(test);
-//      output.writeObject(obj);
-//      output.writeObject(obj);
+//      EmbeddedObject e = new EmbeddedObject();
+//      e.test = 3;
+//      output.writeObject(e);
       MarshallUtil.marshallCollection(segments, output);
+//      output.writeObject(new Integer(2));
+//      output.writeObject(null);
    }
 
    @Override
    public void readFrom(ObjectInput input) throws IOException, ClassNotFoundException {
-      System.out.println("In Test readFrom");
 //      msg = MarshallUtil.unmarshallString(input);
+//      msg = input.readUTF();
 //      flag = input.readBoolean();
 //      flag2 = input.readBoolean();
 //      id = input.readInt();
 //      test = input.readByte();
 //      obj = (EmbeddedObject) input.readObject();
-//      obj = (EmbeddedObject) input.readObject();
+//      obj2 = (EmbeddedObject) input.readObject();
       segments = MarshallUtil.unmarshallCollectionUnbounded(input, HashSet::new);
+//      id = (Integer) input.readObject();
    }
 
    @Override
@@ -72,6 +78,7 @@ public class Test implements ReplicableCommand {
             ", id=" + id +
             ", test=" + test +
             ", obj=" + obj +
+            ", obj2=" + obj2 +
             ", segments=" + segments +
             '}';
    }

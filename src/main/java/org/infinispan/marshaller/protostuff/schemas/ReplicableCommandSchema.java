@@ -67,8 +67,6 @@ public class ReplicableCommandSchema<T extends ReplicableCommand> implements Sch
 
    @Override
    public void mergeFrom(Input input, ReplicableCommand message) throws IOException {
-      System.out.println("mergeFrom in RC schema");
-
       try (ObjectInput objectInput = new ProtostuffObjectInput(input)) {
          message.readFrom(objectInput);
       } catch (ClassNotFoundException e) {
@@ -78,7 +76,6 @@ public class ReplicableCommandSchema<T extends ReplicableCommand> implements Sch
 
    @Override
    public void writeTo(Output output, ReplicableCommand message) throws IOException {
-      System.out.println("writeTo in RC schema");
       ProtostuffObjectOutput objectOutput = new ProtostuffObjectOutput(output, 1, false);
       message.writeTo(objectOutput);
    }

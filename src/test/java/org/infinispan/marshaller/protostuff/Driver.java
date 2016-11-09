@@ -14,6 +14,7 @@ import org.infinispan.statetransfer.StateRequestCommand;
 import org.infinispan.statetransfer.StateResponseCommand;
 import org.infinispan.util.ByteString;
 
+import io.protostuff.WireFormat;
 import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.RuntimeEnv;
 import io.protostuff.runtime.RuntimeSchema;
@@ -25,13 +26,8 @@ import io.protostuff.runtime.RuntimeSchema;
 public class Driver {
 
    public static void main(String[] args) throws Exception {
-      if (RuntimeEnv.ID_STRATEGY instanceof DefaultIdStrategy) {
-//         ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new ReplicableCommandDelegate(Test.class));
-      }
       RuntimeSchema.register(Test.class, new ReplicableCommandSchema<>(Test.class));
       ProtoStuffMarshaller marshaller = new ProtoStuffMarshaller();
-
-      System.out.println("Driver: " + RuntimeEnv.ID_STRATEGY.isDelegateRegistered(StateRequestCommand.class));
 
       ByteString cacheName = ByteString.fromString("cacheName");
       Set<Integer> segments = IntStream.range(0, 256).boxed().collect(Collectors.toSet());
@@ -43,6 +39,17 @@ public class Driver {
 //      System.out.println(buffer.getBuf().length);
 //      System.out.println(marshaller.objectFromByteBuffer(buffer.getBuf()));
 
+//      int tag = WireFormat.makeTag(4, WireFormat.WIRETYPE_TAIL_DELIMITER);
+      int tag = WireFormat.makeTag(0, WireFormat.WIRETYPE_END_GROUP);
+      tag = 8;
+      tag = 12;
+      int fieldNumber = 18 >>> 3;
+      int tagTypeMask = (1 << 3) - 1;
+      int result = (tag & tagTypeMask);
+      System.out.println(fieldNumber);
+      System.out.println(result);
+      System.out.println(result == WireFormat.WIRETYPE_END_GROUP);
+
       Test t = new Test();
       t.msg = "THIS IS A TEST!!!!!";
       t.flag = true;
@@ -52,7 +59,8 @@ public class Driver {
       t.obj = new Test.EmbeddedObject();
       t.obj.test = 20;
 //      t.segments = null;
-      t.segments = IntStream.range(0, 1).boxed().collect(Collectors.toSet());
+//      t.segments = IntStream.range(0, 1).boxed().collect(Collectors.toSet());
+      t.segments = IntStream.range(1, 3).boxed().collect(Collectors.toSet());
 
 //      ByteBuffer buffer = marshaller.objectToBuffer((byte) 0x80);
       ByteBuffer buffer = marshaller.objectToBuffer(t);

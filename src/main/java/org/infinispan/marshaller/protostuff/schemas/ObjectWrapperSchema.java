@@ -54,7 +54,6 @@ public class ObjectWrapperSchema implements Schema<ObjectWrapper> {
    @Override
    public void mergeFrom(Input input, ObjectWrapper message) throws IOException {
       try {
-         System.out.println("mf oj schema");
          input.readFieldNumber(this); // Must read between each subsequent read on input
          Class clazz = Class.forName(input.readString());
          Schema schema = RuntimeSchema.getSchema(clazz);
@@ -69,9 +68,7 @@ public class ObjectWrapperSchema implements Schema<ObjectWrapper> {
 
    @Override
    public void writeTo(Output output, ObjectWrapper message) throws IOException {
-      System.out.println("writeTo oj schema");
       Class clazz = message.getInterfaceClazz();
-      System.out.println(clazz.getName());
       output.writeString(1, clazz.getName(), false);
       Schema schema = RuntimeSchema.getSchema(clazz);
       output.writeObject(2, message.getObject(), schema, false);

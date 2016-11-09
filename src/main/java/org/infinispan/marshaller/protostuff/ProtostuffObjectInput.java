@@ -8,10 +8,12 @@ import java.nio.charset.Charset;
 
 import io.protostuff.ByteArrayInput;
 import io.protostuff.ByteBufferInput;
+import io.protostuff.CodedInput;
 import io.protostuff.GraphByteArrayInput;
 import io.protostuff.Input;
 import io.protostuff.ProtobufException;
 import io.protostuff.Schema;
+import io.protostuff.WireFormat;
 import io.protostuff.runtime.PolymorphicSchemaFactories;
 import io.protostuff.runtime.RuntimeEnv;
 import io.protostuff.runtime.RuntimeSchema;
@@ -28,25 +30,56 @@ public class ProtostuffObjectInput implements ObjectInput, Closeable {
       this.input = input;
    }
 
+//   @Override
+//   public Object readObject() throws ClassNotFoundException, IOException {
+////      ignoreFieldNumber();
+//      System.out.println(input.readFieldNumber(null));
+//      // TODO ArrayIndexOutOfBound due to repeated calls on readObject and fieldNumber
+//      System.out.println(input.readInt32());
+//      System.out.println(input.readInt32());
+//      String className = input.readString();
+//      if (className.isEmpty()) {
+//         return null;
+//      }
+//      System.out.println(className);
+//      Class clazz = Class.forName(className);
+//      Schema schema = RuntimeSchema.getSchema(clazz);
+//      Object object = schema.newMessage();
+//      schema.mergeFrom(input, object);
+//      ignoreFieldNumber();
+////      System.out.println(input.readFieldNumber(null));
+//      return object;
+//   }
+
    @Override
    public Object readObject() throws ClassNotFoundException, IOException {
-      // TODO ArrayIndexOutOfBound due to repeated calls on readObject and fieldNumber
-      String className = readString();
+      checkValidObjectGroup();
+
+      int tag = getTagFromFieldNumber();
+      if (tag == WireFormat.WIRETYPE_END_GROUP)
+         return null;
+
+      String className = input.readString();
       if (className.isEmpty()) {
          return null;
       }
 
-//      ignoreFieldNumber();
       Class clazz = Class.forName(className);
       Schema schema = RuntimeSchema.getSchema(clazz);
       Object object = schema.newMessage();
       schema.mergeFrom(input, object);
+      System.out.println("Read Obj: " + object);
       return object;
    }
 
-   private String readString() throws IOException {
-      ignoreFieldNumber();
-      return input.readString();
+   private void checkValidObjectGroup() throws IOException {
+      int tag = getTagFromFieldNumber();
+//      if (tag == WireFormat.WIRETYPE_START_GROUP)
+//         throw new IOException("Expected Object to start with bytes " + WireFormat.WIRETYPE_START_GROUP);
+   }
+
+   private int getTagFromFieldNumber() throws IOException {
+      return input.readFieldNumber(null) & ((1 << 3) - 1);
    }
 
    @Override
@@ -64,7 +97,7 @@ public class ProtostuffObjectInput implements ObjectInput, Closeable {
    @Override
    public int read(byte[] b, int off, int len) throws IOException {
       ignoreFieldNumber();
-      byte[] bytes =  input.readByteArray();
+      byte[] bytes = input.readByteArray();
       System.arraycopy(bytes, off, b, 0, len);
       return b.length;
    }
@@ -157,13 +190,15 @@ public class ProtostuffObjectInput implements ObjectInput, Closeable {
 
    @Override
    public double readDouble() throws IOException {
-      ignoreFieldNumber();;
+      ignoreFieldNumber();
+      ;
       return input.readDouble();
    }
 
    @Override
    public String readLine() throws IOException {
-      ignoreFieldNumber();;
+      ignoreFieldNumber();
+      ;
       return input.readString();
    }
 
@@ -175,8 +210,9 @@ public class ProtostuffObjectInput implements ObjectInput, Closeable {
    }
 
    /**
-    * Protostuff reads field numbers for each value stored in a buffer, however even though we don't use these we need to ensure
-    * that they are still read to ensure that the underlying input buffer has the correct offset.
+    * Protostuff reads field numbers for each value stored in a buffer, however even though we don't use these we need
+    * to ensure that they are still read to ensure that the underlying input buffer has the correct offset.
+    *
     * @throws IOException
     */
    private void ignoreFieldNumber() throws IOException {
