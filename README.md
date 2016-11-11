@@ -4,7 +4,7 @@ which enables the Protostuff library to be utilised for object Marshalling/Unmar
 
 ## Usage
 
-### Server
+### Server with Compatability Mode Enabled
 1. `mvn install`
 2. Copy `infinispan-marshaller-protostuff-1.0.0-SNAPSHOT-bundle.jar` to `modules/system/layers/base/org/infinispan/main`
 in your infinispan server directory.
